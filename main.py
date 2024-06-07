@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import QFile, QIODevice, QTextStream, QTimer
+from PyQt5.QtCore import QFile, QIODevice, QTextStream, QTimer, Qt
 import sys
 from camera_manager import CameraManager
 from sidebar_menu import create_sidebar_menu
@@ -64,9 +64,13 @@ class MainWindow(QMainWindow):
     def update_camera_feed(self):
         frame = self.camera_manager.capture_frame()
         if frame is not None:
-            status, buf = cv2.imencode('.ppm', frame)
-            self.pixmap.loadFromData(buf.tobytes())
-            self.webcam_label.setPixmap(self.pixmap)
+            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            image = QPixmap.fromImage(QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], QImage.Format_RGB888))
+            scaled_image = self.scale_image(image)
+            self.webcam_label.setPixmap(scaled_image)
+
+    def scale_image(self, image):
+        return image.scaled(self.webcam_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
     def closeEvent(self, event):
         self.camera_manager.release_camera()
