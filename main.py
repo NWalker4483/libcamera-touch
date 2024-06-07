@@ -61,17 +61,25 @@ class MainWindow(QMainWindow):
     def quit_application(self):
         QApplication.quit()
 
+    # def update_camera_feed(self):
+    #     frame = self.camera_manager.capture_frame()
+    #     if frame is not None:
+    #         status, buf = cv2.imencode('.ppm', frame)
+    #         self.pixmap.loadFromData(buf.tobytes())
+    #         self.webcam_label.setPixmap(self.pixmap)
     def update_camera_feed(self):
         frame = self.camera_manager.capture_frame()
         if frame is not None:
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            image = QPixmap.fromImage(QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], QImage.Format_RGB888))
-            scaled_image = self.scale_image(image)
-            self.webcam_label.setPixmap(scaled_image)
+            # rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # h, w, ch = rgb_image.shape
+            # bytesPerLine = ch * w
+            # pixmap = QPixmap()
+            status, buf = cv2.imencode('.ppm', frame)
+            self.pixmap.loadFromData(buf.tobytes())
+            # pixmap.loadFromData(cv2.imencode('.png', rgb_image)[1].tobytes())
+            scaled_pixmap = self.pixmap.scaled(self.webcam_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-    def scale_image(self, image):
-        return image.scaled(self.webcam_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-
+            self.webcam_label.setPixmap(scaled_pixmap)
     def closeEvent(self, event):
         self.camera_manager.release_camera()
         event.accept()
@@ -109,3 +117,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
     sys.exit(app.exec())
+
